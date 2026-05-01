@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PDF to Word Converter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .box {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    input {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px;
+      width: 100%;
+      background: #38bdf8;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>📄 PDF → Word</h2>
+
+  <input type="file" id="fileInput" accept=".pdf">
+  <button onclick="uploadFile()">Convert</button>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+async function uploadFile() {
+  const fileInput = document.getElementById("fileInput");
+  const status = document.getElementById("status");
+
+  if (!fileInput.files.length) {
+    status.innerText = "❌ File select karo";
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append("file", file);
+
+  status.innerText = "⏳ Converting...";
+
+  try {
+    const response = await fetch("/api/convert", {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error("Conversion failed");
+    }
+
+    const blob = await response.blob();
+
+    // Download file
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "converted.docx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    status.innerText = "✅ Download started";
+
+  } catch (error) {
+    status.innerText = "❌ Error: " + error.message;
+  }
+}
+</script>
+
+</body>
+</html>
